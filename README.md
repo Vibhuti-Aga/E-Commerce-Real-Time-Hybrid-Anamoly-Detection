@@ -118,4 +118,4 @@ docker-compose up --build
 
 ## 👤 Author
 
-Vibhu Agarwal
+Vibhuti Agarwal
