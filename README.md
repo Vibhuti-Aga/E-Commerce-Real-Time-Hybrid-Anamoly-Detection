@@ -20,7 +20,7 @@ This project simulates how real e-commerce companies detect fraud transactions i
 ---
 
 ## 🏗️ Architecture
-![Architecture](./Downloads/ReadmeFraud.png)
+
 
 ```mermaid
 flowchart LR
