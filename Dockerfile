@@ -35,6 +35,7 @@ COPY --from=builder /install /usr/local
 
 # Copy application source code
 COPY api.py .
+COPY app.py .
 COPY flink_processor.py .
 COPY flink_job_simulator.py .
 COPY ecommerce_fraud_model.py .
