@@ -646,9 +646,8 @@ metrics = load_metrics()
 shap_data = load_shap()
 fraud_users = df[df['is_fraud'] == 1]['user_id'].unique()[:100]
 
-# API health check (silent)
 try:
-    health = requests.get(f"{API_BASE}/health", timeout=1.5).json()
+    health = requests.get(f"{API_BASE}/health", timeout=10.0).json()
     api_online   = True
     redis_online = health.get("redis") == "connected"
     flink_status = health.get("flink_job_status", "UNKNOWN")
