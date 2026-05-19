@@ -1,0 +1,328 @@
+{
+  "title": "FraudShield — Real-Time Fraud Detection",
+  "uid": "fraudshield-v2",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "timezone": "browser",
+  "tags": ["fraud", "ml", "fastapi"],
+  "panels": [
+    {
+      "id": 1,
+      "title": "🛡️ API Request Rate (req/s)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "reqps"
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "sum(rate(http_requests_total{job=\"fraudshield-api\"}[1m]))",
+        "legendFormat": "Requests/s"
+      }]
+    },
+    {
+      "id": 2,
+      "title": "⚡ API p99 Latency",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "ms",
+          "decimals": 1
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"fraudshield-api\", handler=\"/predict\"}[5m])) by (le)) * 1000",
+        "legendFormat": "p99 ms"
+      }]
+    },
+    {
+      "id": 3,
+      "title": "🚨 Fraud Predictions Total",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "red", "value": null }]
+          },
+          "unit": "short"
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "fraud_predictions_total{verdict=\"fraud\"}",
+        "legendFormat": "Fraud blocked"
+      }]
+    },
+    {
+      "id": 4,
+      "title": "✅ Legit Approvals Total",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "short"
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "fraud_predictions_total{verdict=\"legit\"}",
+        "legendFormat": "Legit approved"
+      }]
+    },
+    {
+      "id": 5,
+      "title": "💰 Amount Blocked ($)",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "orange", "value": null }]
+          },
+          "unit": "currencyUSD",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "fraud_amount_blocked_dollars_total",
+        "legendFormat": "$ blocked"
+      }]
+    },
+    {
+      "id": 6,
+      "title": "🔥 Flink User Velocity Score",
+      "type": "stat",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "decimals": 2
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "flink_user_velocity_score",
+        "legendFormat": "Velocity"
+      }]
+    },
+    {
+      "id": 7,
+      "title": "📈 Request Rate Over Time (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(rate(http_requests_total{job=\"fraudshield-api\", handler=\"/predict\"}[1m]))",
+          "legendFormat": "/predict RPS"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(rate(http_requests_total{job=\"fraudshield-api\"}[1m]))",
+          "legendFormat": "Total RPS"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "⏱️ Prediction Latency Percentiles (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 5 },
+          "unit": "ms"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.50, sum(rate(prediction_latency_milliseconds_bucket[1m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.95, sum(rate(prediction_latency_milliseconds_bucket[1m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.99, sum(rate(prediction_latency_milliseconds_bucket[1m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "🗄️ Redis Lookup Latency Percentiles (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2 },
+          "unit": "ms"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.50, sum(rate(redis_lookup_latency_milliseconds_bucket[1m])) by (le))",
+          "legendFormat": "Redis p50"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.99, sum(rate(redis_lookup_latency_milliseconds_bucket[1m])) by (le))",
+          "legendFormat": "Redis p99"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "🚨 Fraud vs Legit Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "rate(fraud_predictions_total{verdict=\"fraud\"}[2m]) / (rate(fraud_predictions_total{verdict=\"fraud\"}[2m]) + rate(fraud_predictions_total{verdict=\"legit\"}[2m]))",
+          "legendFormat": "Fraud rate"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "🔄 HTTP Error Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "custom": { "lineWidth": 2 },
+          "unit": "reqps"
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "sum(rate(http_requests_total{job=\"fraudshield-api\", status=~\"5..\"}[1m]))",
+        "legendFormat": "5xx errors/s"
+      }]
+    },
+    {
+      "id": 12,
+      "title": "📊 Active Requests In-Flight",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2 },
+          "unit": "short"
+        }
+      },
+      "targets": [{
+        "datasource": "Prometheus",
+        "expr": "http_requests_inprogress{job=\"fraudshield-api\"}",
+        "legendFormat": "In-flight requests"
+      }]
+    }
+  ]
+}

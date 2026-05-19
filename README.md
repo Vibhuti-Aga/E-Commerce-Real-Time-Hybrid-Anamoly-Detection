@@ -1,4 +1,4 @@
-# 🚨 Real-Time Hybrid E-Commerce Fraud Detection System
+# 🛡️ FraudShield — Real-Time Hybrid E-Commerce Fraud Detection System
 
 Python • Kafka • Flink • Feast • LightGBM • FastAPI • Docker • AWS
 
@@ -110,9 +110,59 @@ flowchart LR
 
 ## 🛠️ Run Locally
 
+You can run the entire stack locally using Docker Compose, or manually start the services.
+
+### Local Docker Compose
 ```bash
 docker-compose up --build
 ```
+This will start Redis, Prometheus, and Grafana (for monitoring).
+
+### Manual Run (3 terminals)
+
+**Terminal 1 — FastAPI Backend**
+```bash
+python api.py
+# Runs on http://127.0.0.1:8001
+# Docs: http://127.0.0.1:8001/docs
+```
+
+**Terminal 2 — Flink Stream Processor (optional but recommended)**
+```bash
+python flink_processor.py
+# Streams data from CSV, computes windowed features, writes to Redis
+# Uses TumblingWindow(1h) + SlidingWindow(24h) per user
+```
+
+**Terminal 3 — Streamlit Dashboard**
+```bash
+streamlit run app.py
+# Opens at http://localhost:8501
+```
+
+## Retrain Model
+```bash
+python ecommerce_fraud_model.py
+# Outputs: model.pkl, model_metrics.json, shap_importance.json
+```
+
+## Internal Architecture Data Flow
+```
+transactions.csv
+     │
+     ▼  flink_processor.py (TransactionSource → KeyedStream → ProcessFunction → RedisSink)
+Redis (user velocity, 1h/24h windowed counts)
+     │
+     ▼  api.py (FastAPI) — enriches features with Flink state at prediction time
+LightGBM model → fraud probability + SHAP explanation
+     │
+     ▼  app.py (Streamlit) — 5-tab dashboard
+```
+
+## Model Performance (on held-out FUTURE data — no leakage)
+- **ROC-AUC:** 0.9736
+- **Fraud Recall:** 83.7% (catches 84% of actual fraud)
+- **Train cutoff:** 2024-09-01 (trained on Jan→Aug, tested on Sep→Oct)
 
 ---
 

@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  # ── Redis (state backend for Flink features) ──────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: fraudshield-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # ── Prometheus ────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: fraudshield-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # so it can reach your localhost:8001
+    depends_on:
+      - redis
+
+  # ── Grafana ──────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: fraudshield-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=fraudshield
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data:

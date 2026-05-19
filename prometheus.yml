@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s        # pull metrics every 5 seconds
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "fraudshield-api"
+    static_configs:
+      - targets: ["host.docker.internal:8001"]   # FastAPI on your host machine
+    metrics_path: /metrics
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis:6379"]

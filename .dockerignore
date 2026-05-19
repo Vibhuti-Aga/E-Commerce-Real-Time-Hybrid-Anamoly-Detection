@@ -1,0 +1,40 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+
+# Git
+.git/
+.gitignore
+
+# Docker files (no need in image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Dev/test files
+benchmark.py
+benchmark_results.json
+*.log
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large data artifacts (included selectively)
+# transactions.csv is needed for the Flink simulator — keep it
+# model.pkl is needed for inference — keep it
