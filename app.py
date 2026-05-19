@@ -652,8 +652,10 @@ try:
     redis_online = health.get("redis") == "connected"
     flink_status = health.get("flink_job_status", "UNKNOWN")
     flink_events = health.get("flink_events_processed", 0)
-except Exception:
+    api_err = ""
+except Exception as e:
     api_online   = False
+    api_err      = str(e)
     redis_online = False
     flink_status = "OFFLINE"
     flink_events = 0
@@ -714,6 +716,9 @@ tabs = st.tabs([
     "Model Analytics",
     "Infrastructure",
 ])
+
+if not api_online:
+    st.error(f"⚠️ Could not connect to backend API at {API_BASE}/health.\nError details: {api_err}")
 
 
 # ════════════════════════════════════════════════════════════════
