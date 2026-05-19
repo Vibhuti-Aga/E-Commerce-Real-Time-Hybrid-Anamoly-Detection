@@ -1,5 +1,9 @@
 # 🛡️ FraudShield — Real-Time Hybrid E-Commerce Fraud Detection System
 
+**[Live Dashboard]** (Add your Streamlit URL here when deployed!)
+**[Live API Endpoint & Swagger Docs 🚀](https://e-commerce-real-time-hybrid-anamoly.onrender.com/docs)**
+**[Live API Health Status 🟢](https://e-commerce-real-time-hybrid-anamoly.onrender.com/health)**
+
 Python • Kafka • Flink • Feast • LightGBM • FastAPI • Docker • AWS
 
 A production-style real-time fraud detection pipeline capable of handling 10K+ TPS with <50ms latency.
